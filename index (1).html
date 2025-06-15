@@ -1,0 +1,232 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Truck Dispatching Solutions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.24.7/babel.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // Admin Dashboard Component
+    function AdminDashboard() {
+      return (
+        <div className="min-h-screen bg-gray-200 p-6">
+          <header className="bg-blue-600 text-white p-4 flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Admin Panel</h1>
+            <button
+              onClick={() => window.location.hash = ''}
+              className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100"
+            >
+              Back to Website
+            </button>
+          </header>
+          <div className="max-w-7xl mx-auto mt-6">
+            <h2 className="text-3xl font-bold mb-4">Dispatch Management</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* User Management */}
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h3 className="text-xl font-semibold mb-2">User Management</h3>
+                <p className="text-gray-600">Add, update, or remove users (e.g., drivers, dispatchers).</p>
+                <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                  Manage Users
+                </button>
+              </div>
+              {/* Load Dispatching */}
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h3 className="text-xl font-semibold mb-2">Load Dispatching</h3>
+                <p className="text-gray-600">Assign loads to drivers with real-time scheduling.</p>
+                <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                  Assign Load
+                </button>
+              </div>
+              {/* Reporting */}
+              <div className="bg-white p-6 rounded-lg shadow">
+                <h3 className="text-xl font-semibold mb-2">Reporting</h3>
+                <p className="text-gray-600">Generate reports for revenue, driver performance, and IFTA.</p>
+                <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                  View Reports
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Main Website Component
+    function Website() {
+      return (
+        <div>
+          {/* Header */}
+          <header className="bg-blue-600 text-white py-6">
+            <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
+              <h1 className="text-3xl font-bold">Smart Truck Dispatching Solutions</h1>
+              <button
+                onClick={() => window.location.hash = 'admin'}
+                className="bg-white text-blue-600 px-4 py-2 rounded hover:bg-gray-100"
+              >
+                Admin Panel
+              </button>
+            </div>
+          </header>
+
+          {/* Hero Section */}
+          <section className="bg-blue-100 py-12 text-center">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-4xl font-bold mb-4">Maximize Your Trucking Profits</h2>
+              <p className="text-xl mb-6">We help owner-operators and fleet owners with 24/7 support and optimized loads.</p>
+              <a href="#contact" className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">
+                Get Started
+              </a>
+            </div>
+          </section>
+
+          {/* Features Section */}
+          <section id="features" className="py-12 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-8">Our Features</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gray-100 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Load Management</h3>
+                  <p>Efficiently create and assign loads with real-time scheduling.</p>
+                </div>
+                <div className="bg-gray-100 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Real-Time GPS Tracking</h3>
+                  <p>Track trucks live with geofencing and ETA updates.</p>
+                </div>
+                <div className="bg-gray-100 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Invoicing</h3>
+                  <p>Auto-generate invoices and integrate with QuickBooks.</p>
+                </div>
+                <div className="bg-gray-100 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">AI Automation</h3>
+                  <p>Automate load assignments with AI-driven insights.</p>
+                </div>
+                <div className="bg-gray-100 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Load Board Integration</h3>
+                  <p>Access high-paying freight via DAT or Truckstop.</p>
+                </div>
+                <div className="bg-gray-100 p-6 rounded-lg">
+                  <h3 className="text-xl font-semibold mb-2">Customer Portal</h3>
+                  <p>Self-service portal for quotes and tracking.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Why Choose Us Section */}
+          <section id="why-us" className="py-12 bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-8">Why Choose Us</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <p className="text-2xl mb-2">✅</p>
+                  <h3 className="text-xl font-semibold mb-2">24/7 Support</h3>
+                  <p>Real-time assistance anytime you need.</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl mb-2">🚛</p>
+                  <h3 className="text-xl font-semibold mb-2">Load Optimization</h3>
+                  <p>We help you get the best-paying loads fast.</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl mb-2">💼</p>
+                  <h3 className="text-xl font-semibold mb-2">Dedicated Agents</h3>
+                  <p>Trained dispatchers with logistics experience.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Contact Section */}
+          <section id="contact" className="py-12 bg-white">
+            <div className="max-w-7xl mx-auto px-4">
+              <h2 className="text-3xl font-bold text-center mb-8">Contact Us</h2>
+              <div className="max-w-lg mx-auto">
+                <div className="grid grid-cols-1 gap-4">
+                  <input type="text" placeholder="Name" className="p-3 border rounded w-full" />
+                  <input type="email" placeholder="Email" className="p-3 border rounded w-full" />
+                  <textarea placeholder="Message" className="p-3 border rounded w-full h-32"></textarea>
+                  <button className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700">
+                    Send Message
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Footer */}
+          <footer className="bg-blue-600 text-white py-6 text-center">
+            <p>© 2025 DispatchExperts. All rights reserved.</p>
+          </footer>
+        </div>
+      );
+    }
+
+    // App Component with Routing
+    function App() {
+      const [view, setView] = useState(window.location.hash === '#admin' ? 'admin' : 'website');
+
+      React.useEffect(() => {
+        const handleHashChange = () => {
+          setView(window.location.hash === '#admin' ? 'admin' : 'website');
+        };
+        window.addEventListener('hashchange', handleHashChange);
+        return () => window.removeEventListener('hashchange', handleHashChange);
+      }, []);
+
+      return view === 'admin' ? <AdminDashboard /> : <Website />;
+    }
+
+    // Render the App
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
